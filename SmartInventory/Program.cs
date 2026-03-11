@@ -20,6 +20,18 @@ public class Program
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection nao configurada.");
 
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+            if (!string.IsNullOrEmpty(databaseUrl))
+            {
+                var databaseUri = new Uri(databaseUrl);
+                var userInfo = databaseUri.UserInfo.Split(':');
+
+                connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
+            }
+        }
+
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -69,18 +81,6 @@ public class Program
         {
             var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
             await initializer.InitializeAsync();
-        }
-
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-            if (!string.IsNullOrEmpty(databaseUrl))
-            {
-                var databaseUri = new Uri(databaseUrl);
-                var userInfo = databaseUri.UserInfo.Split(':');
-
-                connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-            }
         }
 
         await app.RunAsync();
