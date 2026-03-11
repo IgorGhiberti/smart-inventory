@@ -17,7 +17,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = "Host=postgres.railway.internal;Port=5432;Database=railway;Username=postgres;Password=jrNijKSluFGbAZKNWnkNGTJSiJUliywr;SSL Mode=Require;Trust Server Certificate=true";
+        var connectionString = "Host=caboose.proxy.rlwy.net:40572/railway;Port=5432;Database=railway;Username=postgres;Password=jrNijKSluFGbAZKNWnkNGTJSiJUliywr;SSL Mode=Require;Trust Server Certificate=true";
 
         builder.Services.AddHttpContextAccessor();
 
