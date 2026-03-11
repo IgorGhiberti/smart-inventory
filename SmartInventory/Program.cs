@@ -17,19 +17,26 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection nao configurada.");
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-        if (string.IsNullOrEmpty(connectionString))
+        if (string.IsNullOrEmpty(connectionString) || connectionString.StartsWith("postgres://"))
         {
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-            if (!string.IsNullOrEmpty(databaseUrl))
+            var rawUrl = connectionString?.StartsWith("postgres://") == true
+                         ? connectionString
+                         : Environment.GetEnvironmentVariable("DATABASE_URL");
+
+            if (!string.IsNullOrEmpty(rawUrl))
             {
-                var databaseUri = new Uri(databaseUrl);
+                var databaseUri = new Uri(rawUrl);
                 var userInfo = databaseUri.UserInfo.Split(':');
 
                 connectionString = $"Host={databaseUri.Host};Port={databaseUri.Port};Database={databaseUri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
             }
+        }
+
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("String de conexão não encontrada nem configurada via DATABASE_URL.");
         }
 
         builder.Services.AddHttpContextAccessor();
