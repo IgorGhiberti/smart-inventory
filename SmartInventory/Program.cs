@@ -17,8 +17,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection")
-              ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection");
 
         // O Trim() remove espaços ou quebras de linha acidentais no início/fim
         var connectionString = rawConn?.Trim();
