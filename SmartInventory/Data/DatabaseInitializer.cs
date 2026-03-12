@@ -20,29 +20,36 @@ public class DatabaseInitializer
 
     public async Task InitializeAsync()
     {
-        await _dbContext.Database.MigrateAsync();
-
-        var adminEmail = _configuration["SeedAdmin:Email"] ?? "admin@smartinventory.local";
-        var adminPassword = _configuration["SeedAdmin:Password"] ?? "Admin@123";
-        var adminName = _configuration["SeedAdmin:Name"] ?? "Administrador";
-
-        var existingAdmin = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == adminEmail);
-        if (existingAdmin is not null)
+        try
         {
-            return;
+            await _dbContext.Database.MigrateAsync();
+
+            var adminEmail = _configuration["SeedAdmin:Email"] ?? "admin@smartinventory.local";
+            var adminPassword = _configuration["SeedAdmin:Password"] ?? "Admin@123";
+            var adminName = _configuration["SeedAdmin:Name"] ?? "Administrador";
+
+            var existingAdmin = await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == adminEmail);
+            if (existingAdmin is not null)
+            {
+                return;
+            }
+
+            var admin = new User
+            {
+                Name = adminName,
+                Email = adminEmail,
+                Role = UserRole.Admin,
+                IsActive = true
+            };
+
+            admin.PasswordHash = _passwordHasher.HashPassword(admin, adminPassword);
+            _dbContext.Users.Add(admin);
+
+            await _dbContext.SaveChangesAsync();
         }
-
-        var admin = new User
+        catch (Exception ex)
         {
-            Name = adminName,
-            Email = adminEmail,
-            Role = UserRole.Admin,
-            IsActive = true
-        };
-
-        admin.PasswordHash = _passwordHasher.HashPassword(admin, adminPassword);
-        _dbContext.Users.Add(admin);
-
-        await _dbContext.SaveChangesAsync();
+            throw new Exception(ex.Message);
+        }
     }
 }
