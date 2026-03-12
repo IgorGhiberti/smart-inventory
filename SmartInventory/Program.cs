@@ -29,7 +29,7 @@ public class Program
         }
 
         // Log seguro para você ver no Railway se ele está lendo algo
-        Console.WriteLine($"LOG: Connection String carregada. Tamanho: {connectionString} caracteres.");
+        Console.WriteLine($"LOG: Connection String carregada. connection string: {connectionString}");
 
         builder.Services.AddHttpContextAccessor();
 
