@@ -17,12 +17,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection")
+              ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+        // O Trim() remove espaços ou quebras de linha acidentais no início/fim
+        var connectionString = rawConn?.Trim();
 
         if (string.IsNullOrEmpty(connectionString))
         {
-            throw new InvalidOperationException("A ConnectionString 'DefaultConnection' não foi encontrada!");
+            throw new Exception("LOG DE ERRO: A variável de conexão veio VAZIA ou NULA!");
         }
+
+        // Log seguro para você ver no Railway se ele está lendo algo
+        Console.WriteLine($"LOG: Connection String carregada. Tamanho: {connectionString.Length} caracteres.");
 
         builder.Services.AddHttpContextAccessor();
 
