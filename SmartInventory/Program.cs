@@ -17,24 +17,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Busca a variável de ambiente
-        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection")?.Trim();
+        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection")
+              ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
-        if (string.IsNullOrEmpty(rawConn))
+        // O Trim() remove espaços ou quebras de linha acidentais no início/fim
+        var connectionString = rawConn?.Trim();
+
+        if (string.IsNullOrEmpty(connectionString))
         {
-            throw new Exception("ERRO: Variável 'DefaultConnection' está vazia ou nula no Railway.");
+            throw new Exception("LOG DE ERRO: A variável de conexão veio VAZIA ou NULA!");
         }
 
-        // Se você colou a URL começando com postgresql://, este bloco corrige para o formato ADO.NET
-        string connectionString = rawConn;
-        if (rawConn.StartsWith("postgresql://"))
-        {
-            var uri = new Uri(rawConn);
-            var userInfo = uri.UserInfo.Split(':');
-            connectionString = $"Host={uri.Host};Port={uri.Port};Database={uri.AbsolutePath.TrimStart('/')};Username={userInfo[0]};Password={userInfo[1]};SSL Mode=Require;Trust Server Certificate=true";
-        }
-
-        Console.WriteLine($"LOG: Connection String processada. Tamanho final: {connectionString.Length} caracteres.");
+        // Log seguro para você ver no Railway se ele está lendo algo
+        Console.WriteLine($"LOG: Connection String carregada. Tamanho: {connectionString} caracteres.");
 
         builder.Services.AddHttpContextAccessor();
 
