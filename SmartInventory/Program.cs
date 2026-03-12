@@ -17,7 +17,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
+        var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
         if (string.IsNullOrEmpty(connectionString))
         {
