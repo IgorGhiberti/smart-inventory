@@ -17,7 +17,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var connectionString = "Host=caboose.proxy.rlwy.net;Port=40572;Database=railway;Username=postgres;Password=jrNijKSluFGbAZKNWnkNGTJSiJUliywr;SSL Mode=Require;Trust Server Certificate=true";
+        var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 
         builder.Services.AddHttpContextAccessor();
 
