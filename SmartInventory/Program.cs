@@ -19,6 +19,11 @@ public class Program
 
         var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            throw new InvalidOperationException("A ConnectionString 'DefaultConnection' não foi encontrada!");
+        }
+
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
