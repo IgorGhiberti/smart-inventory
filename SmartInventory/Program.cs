@@ -17,23 +17,35 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        var rawConn = Environment.GetEnvironmentVariable("DefaultConnection");
+        // 1. Busca a variável (Tenta achar no Railway primeiro, se não achar, pega do appsettings local)
+        var rawConnectionString = Environment.GetEnvironmentVariable("DefaultConnection")
+                               ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-        // O Trim() remove espaços ou quebras de linha acidentais no início/fim
-        var connectionString = rawConn?.Trim();
-
-        if (string.IsNullOrEmpty(connectionString))
+        if (string.IsNullOrEmpty(rawConnectionString))
         {
-            throw new Exception("LOG DE ERRO: A variável de conexão veio VAZIA ou NULA!");
+            throw new Exception("ERRO CRÍTICO: Nenhuma string de conexão foi encontrada!");
         }
 
-        // Log seguro para você ver no Railway se ele está lendo algo
-        Console.WriteLine($"LOG: Connection String carregada. connection string: {connectionString}");
+        string finalConnectionString = rawConnectionString;
+
+        // 2. O "Tradutor": Se a string vier do Railway (começando com postgres://), ele converte
+        if (rawConnectionString.StartsWith("postgres://") || rawConnectionString.StartsWith("postgresql://"))
+        {
+            var uri = new Uri(rawConnectionString);
+            var userInfo = uri.UserInfo.Split(':');
+            var host = uri.Host;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var db = uri.AbsolutePath.TrimStart('/');
+            var user = userInfo[0];
+            var pass = userInfo.Length > 1 ? userInfo[1] : "";
+
+            finalConnectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        }
 
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options.UseNpgsql(finalConnectionString));
 
         builder.Services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
