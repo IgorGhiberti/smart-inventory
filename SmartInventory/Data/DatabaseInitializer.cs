@@ -49,7 +49,14 @@ public class DatabaseInitializer
         }
         catch (Exception ex)
         {
-            throw new Exception(ex.Message);
+            // Isso vai mostrar no console do Railway exatamente qual Host ele não achou
+            Console.WriteLine("CRITICAL ERRO NA MIGRAÇÃO: " + ex.Message);
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine("DETALHE INTERNO: " + ex.InnerException.Message);
+            }
+            // O comando 'throw;' sozinho preserva o rastro (stack trace) original do erro
+            throw;
         }
     }
 }
