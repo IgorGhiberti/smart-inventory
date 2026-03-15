@@ -17,35 +17,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // 1. Busca a variável (Tenta achar no Railway primeiro, se não achar, pega do appsettings local)
-        var rawConnectionString = Environment.GetEnvironmentVariable("DefaultConnection")
-                               ?? builder.Configuration.GetConnectionString("DefaultConnection");
-
-        if (string.IsNullOrEmpty(rawConnectionString))
-        {
-            throw new Exception("ERRO CRÍTICO: Nenhuma string de conexão foi encontrada!");
-        }
-
-        string finalConnectionString = rawConnectionString;
-
-        // 2. O "Tradutor": Se a string vier do Railway (começando com postgres://), ele converte
-        if (rawConnectionString.StartsWith("postgres://") || rawConnectionString.StartsWith("postgresql://"))
-        {
-            var uri = new Uri(rawConnectionString);
-            var userInfo = uri.UserInfo.Split(':');
-            var host = uri.Host;
-            var port = uri.Port > 0 ? uri.Port : 5432;
-            var db = uri.AbsolutePath.TrimStart('/');
-            var user = userInfo[0];
-            var pass = userInfo.Length > 1 ? userInfo[1] : "";
-
-            finalConnectionString = $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
-        }
+        var connectionString = Environment.GetEnvironmentVariable("DefaultConnection");
 
         builder.Services.AddHttpContextAccessor();
 
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(finalConnectionString));
+            options.UseNpgsql(connectionString));
 
         builder.Services
             .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
